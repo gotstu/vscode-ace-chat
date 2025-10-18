@@ -1,0 +1,47 @@
+{
+	"name": "ace-chat",
+	"displayName": "ACE Chat - SPEX Helper",
+	"description": "",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.100.0"
+	},
+	"categories": [
+		"AI",
+		"Chat"
+	],
+	"activationEvents": [],
+	"main": "./out/extension.js",
+	"contributes": {
+		"chatParticipants": [
+			{
+				"id": "ace-chat.spex-helper",
+				"fullName": "SPEX Helper",
+				"name": "spex",
+				"description": "Ask me something about product info found in SPEX",
+				"isSticky": true,
+				"commands": [
+					{
+						"name": "help",
+						"description": "Provide SPEX information about a product."
+					}
+				]
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"lint": "eslint"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.13.0",
+		"@stylistic/eslint-plugin": "^2.9.0",
+		"@types/node": "^22.17.0",
+		"@types/vscode": "^1.100.0",
+		"eslint": "^9.13.0",
+		"typescript": "^5.9.2",
+		"typescript-eslint": "^8.39.0"
+	}
+}

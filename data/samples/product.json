@@ -1,0 +1,25 @@
+{
+    "id": 3,
+    "changesetStatus": "R",
+    "status": "R",
+    "topics": [
+        {
+            "id": 9530,
+            "isInternal": false,
+            "lockedBy": null,
+            "status": null,
+            "tag": "",
+            "name": "Section",
+            "parentId": 9529,
+            "orderIndex": 1
+        }
+    ],
+    "changesetId": 0,
+    "name": "Low Voltage Motor Control Centers",
+    "type": "PRD",
+    "createdBy": "SESA213338",
+    "lastUpdatedBy": "SESA213338",
+    "lastUpdatedDate": "2025-10-17T17:28:59.648444",
+    "tag": "0210",
+    "isVisible": false
+}
