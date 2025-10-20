@@ -3,7 +3,7 @@ export interface Product {
     id: number;
     changesetStatus: string;
     status: string;
-    topics: Array<{
+    topics: {
         id: number;
         isInternal: boolean;
         lockedBy: string | null;
@@ -12,7 +12,7 @@ export interface Product {
         name: string;
         parentId: number;
         orderIndex: number;
-    }>;
+    }[];
     changesetId: number;
     name: string;
     type: string;

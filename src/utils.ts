@@ -3,15 +3,15 @@ import * as path from 'path';
 
 // Utility to load the base prompt from markdown file
 export function loadBasePrompt(extensionPath: string): string {
-	const basePromptPath = path.join(extensionPath, 'src', 'basePrompt.md');
-	try {
-		return fs.readFileSync(basePromptPath, 'utf-8');
-	} catch (err) {
-		return 'Base prompt could not be loaded.';
-	}
+    const basePromptPath = path.join(extensionPath, 'src', 'basePrompt.md');
+    try {
+        return fs.readFileSync(basePromptPath, 'utf-8');
+    } catch {
+        return 'Base prompt could not be loaded.';
+    }
 }
 // Utility to fetch PRD collections with isVisible true, returning id, name and tag of ProductCollection
-export async function fetchCollections(): Promise<Array<{ id: number; name: string; tag: string }>> {
+export async function fetchCollections(): Promise<{ id: number; name: string; tag: string }[]> {
 	const url = 'https://spex.se.com/api/version/1/collections';
 	const response = await fetch(url);
 	if (!response.ok) {
@@ -19,22 +19,28 @@ export async function fetchCollections(): Promise<Array<{ id: number; name: stri
 	}
 	const data: unknown = await response.json();
 	if (Array.isArray(data)) {
-        return data
-            .filter((item: any) =>
-                typeof item === 'object' && item !== null &&
-                item.type === 'PRD' && item.isVisible === true &&
-                'id' in item && 'name' in item && 'tag' in item
-            )
-            .map((item: any) => ({
-                id: item.id,
-                name: item.name,
-                tag: item.tag
-            }));
+		return data
+			.filter((item: unknown): item is { id: number; name: string; tag: string; type: string; isVisible: boolean } => {
+				if (
+					typeof item === 'object' && item !== null &&
+					'type' in item && 'isVisible' in item &&
+					'id' in item && 'name' in item && 'tag' in item
+				) {
+					const obj = item as { type: string; isVisible: boolean };
+					return obj.type === 'PRD' && obj.isVisible === true;
+				}
+				return false;
+			})
+			.map((item) => ({
+				id: item.id,
+				name: item.name,
+				tag: item.tag
+			}));
 	}
 	throw new Error('Unexpected response format');
 }
 // Utility to fetch topic objects (id and name) for a given collectionId
-export async function fetchTopics(collectionId: number): Promise<Array<{ id: number; name: string }>> {
+export async function fetchTopics(collectionId: number): Promise<{ id: number; name: string }[]> {
 	const url = `https://spex.se.com/api/version/1/collections/${collectionId}/topics`;
 	const response = await fetch(url);
 	if (!response.ok) {
@@ -45,15 +51,15 @@ export async function fetchTopics(collectionId: number): Promise<Array<{ id: num
 		typeof data === 'object' &&
 		data !== null &&
 		'topics' in data &&
-		Array.isArray((data as any).topics)
+		Array.isArray((data as { topics: unknown }).topics)
 	) {
-		return (data as any).topics
-			.map((item: any) =>
+		return (data as { topics: unknown[] }).topics
+			.map((item): { id: number; name: string } | undefined =>
 				typeof item === 'object' && item !== null && 'id' in item && 'name' in item
-					? { id: item.id, name: item.name }
+					? { id: (item as { id: number }).id, name: (item as { name: string }).name }
 					: undefined
 			)
-			.filter(Boolean);
+			.filter((item): item is { id: number; name: string } => Boolean(item));
 	}
 	throw new Error('Unexpected response format');
 }
@@ -69,7 +75,7 @@ export async function fetchTopicContent(collectionId: number, topicId: number): 
 		typeof data === 'object' &&
 		data !== null &&
 		'content' in data &&
-		typeof (data as any).content === 'string'
+		typeof (data as { content: unknown }).content === 'string'
 	) {
 		return (data as { content: string }).content;
 	}
@@ -88,15 +94,15 @@ export async function fetchTopicNames(): Promise<string[]> {
 		typeof data === 'object' &&
 		data !== null &&
 		'topics' in data &&
-		Array.isArray((data as any).topics)
+		Array.isArray((data as { topics: unknown }).topics)
 	) {
-		return (data as { topics: Array<{ name: string }> }).topics
-			.map((item) =>
-				typeof item === 'object' && item !== null && 'name' in item && typeof item.name === 'string'
-					? item.name
+		return (data as { topics: unknown[] }).topics
+			.map((item): string | undefined =>
+				typeof item === 'object' && item !== null && 'name' in item && typeof (item as { name: unknown }).name === 'string'
+					? (item as { name: string }).name
 					: undefined
 			)
-			.filter(Boolean) as string[];
+			.filter((name): name is string => Boolean(name));
 	}
 	throw new Error('Unexpected response format');
 }
