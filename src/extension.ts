@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { loadBasePrompt, fetchCollections, fetchTopics, fetchTopicContent } from './utils';
+import { loadBasePrompt, fetchCollections, fetchTopics, fetchTopicContent } from './utils/spex';
 
 let productCollection: { id: number; name: string; tag: string }[] = [];
 const debugMode = false; // Set to true to enable debug output
