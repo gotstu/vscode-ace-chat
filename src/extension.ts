@@ -152,7 +152,7 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 		for await (const fragment of summaryResponse.text) {
 			summaryText += fragment;
 		}
-		stream.markdown(`**Summary:**\n\n${summaryText}\n`);
+		stream.markdown(`\n\n**Summary:**\n\n${summaryText}\n`);
 
 		// Optionally, display child topics as links (no content)
 		for (const topic of bestTopics) {
@@ -160,10 +160,10 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 			try {
 				const childTopics = await fetchChildTopics(collectionId, topic.id);
 				if (childTopics.length > 0) {
-					stream.markdown(`### Child Topics for [${topic.name}](${topicUrl}):`);
+					stream.markdown(`### Child Topics for [${topic.name}](${topicUrl}):\n`);
 					childTopics.forEach((child, idx) => {
-						const childUrl = `https://spex.se.com/ui/docs?collectionId=${collectionId}&topicId=${child.id}`;
-						stream.markdown(`${idx + 1}. [${child.name}](${childUrl})`);
+						const childUrl = `https://spex.se.com/ui/docs?collectionId=${collectionId}&topicId=${child.id}\n`;
+						stream.markdown(`${idx + 1}. [${child.name}](${childUrl})\n`);
 					});
 				}
 			} catch {
