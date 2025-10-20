@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { loadBasePrompt, fetchCollections, fetchTopics, fetchChildTopics } from './utils';
+import { loadBasePrompt, fetchCollections, fetchTopics, fetchTopicContent } from './utils';
 
 let productCollection: { id: number; name: string; tag: string }[] = [];
 const debugMode = false; // Set to true to enable debug output
@@ -37,7 +37,7 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 		if (request.command) {
 			command = request.command.toLowerCase();
 			userPrompt = request.prompt;
-		} 
+		}
 
 		if (!command) {
 			stream.markdown('Please use a supported command (e.g., `/spex`).');
@@ -132,14 +132,9 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 			return;
 		}
 
-		// New: Ask LLM to pick top 3 topics relevant to the user prompt
-		const topicPrompt = `Product: ${topProduct.name}\nTopics: ${JSON.stringify(topics, null, 2)}\nUser Prompt: ${userPrompt}\n\nTask: From the topics above, identify the top 3 most relevant topics to the user's prompt. Return your answer as a JSON array of objects with "id", "name", and "confidence" as a number between 0 and 1.`;
 
-		// Uncomment these lines if you want to debug topic selection
-		// if (debugMode) {
-		//     stream.markdown('**LLM Topic Selection Prompt:**');
-		//     stream.markdown('```text\n' + topicPrompt + '\n```');
-		// }
+		// Ask LLM to pick top 3 topics relevant to the user prompt
+		const topicPrompt = `Product: ${topProduct.name}\nTopics: ${JSON.stringify(topics, null, 2)}\nUser Prompt: ${userPrompt}\n\nTask: From the topics above, identify the top 3 most relevant topics to the user's prompt. Return your answer as a JSON array of objects with "id", "name", and "confidence" as a number between 0 and 1.`;
 
 		const topicMessages = [
 			vscode.LanguageModelChatMessage.User(topicPrompt)
@@ -170,14 +165,30 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 			return;
 		}
 
-		stream.markdown(`**Top Product:** ${topProduct.name}\n\n**Best Topics:**\n\n`);
-		bestTopics.forEach((topic, idx) => {
-			const topicUrl = `https://spex.se.com/ui/docs?collectionId=${collectionId}&topicId=${topic.id}`;
-			stream.markdown(`${idx + 1}. [${topic.name}](${topicUrl}) (confidence: ${topic.confidence})\n`);
-		});
 
-		// Ask AI for a summary based on best topics and user prompt
-		const summaryPrompt = `\nYou are an expert assistant. Based on the following topics and the user's prompt, provide a concise summary or answer for the user. Reference the topics as needed, but do not include their full content.\n\nUser Prompt: ${userPrompt}\nBest Topics: ${JSON.stringify(bestTopics, null, 2)}\n\nTask: Write a summary or answer for the user, referencing the topics above as supporting links.`;
+		// Show the top relevant topics and their confidence to the user, with clickable links
+		if (bestTopics && bestTopics.length > 0) {
+			stream.markdown('**Top relevant topics:**\n');
+			bestTopics.forEach((topic, idx) => {
+				// Create an external URL for the topic documentation
+				const topicUrl = `https://spex.se.com/ui/docs?collectionId=${collectionId}&topicId=${topic.id}`;
+				stream.markdown(`${idx + 1}. [${topic.name}](${topicUrl}) (confidence: ${topic.confidence})\n`);
+			});
+		}
+
+		// Fetch topic content for each best topic
+		let topicContents: string[] = [];
+		try {
+			topicContents = await Promise.all(
+				bestTopics.map(topic => fetchTopicContent(collectionId, topic.id))
+			);
+		} catch {
+			stream.markdown('Failed to fetch topic content.');
+			return;
+		}
+
+		// Build a prompt with topic content only, and strictly instruct the LLM to use ONLY topic content
+		const summaryPrompt = `You are an expert assistant. Answer the user's prompt using ONLY the information provided in the "Topic Content" sections below. Do NOT use any outside knowledge, product collection data, or information not present in the topic content.\n\nUser Prompt: ${userPrompt}\n\nTopic Content:\n${topicContents.map((content, i) => `---\n${bestTopics[i].name}:\n${content}\n`).join('\n')}`;
 
 		const summaryMessages = [
 			vscode.LanguageModelChatMessage.User(summaryPrompt)
@@ -190,23 +201,6 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 			summaryText += fragment;
 		}
 		stream.markdown(`\n\n**Summary:**\n\n${summaryText}\n`);
-
-		// Optionally, display child topics as links (no content)
-		for (const topic of bestTopics) {
-			const topicUrl = `https://spex.se.com/ui/docs?collectionId=${collectionId}&topicId=${topic.id}`;
-			try {
-				const childTopics = await fetchChildTopics(collectionId, topic.id);
-				if (childTopics.length > 0) {
-					stream.markdown(`### Child Topics for [${topic.name}](${topicUrl}):\n`);
-					childTopics.forEach((child, idx) => {
-						const childUrl = `https://spex.se.com/ui/docs?collectionId=${collectionId}&topicId=${child.id}\n`;
-						stream.markdown(`${idx + 1}. [${child.name}](${childUrl})\n`);
-					});
-				}
-			} catch {
-				stream.markdown(`Failed to fetch child topics for ${topic.name}.`);
-			}
-		}
 	}
 }
 
