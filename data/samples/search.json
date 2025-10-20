@@ -1,0 +1,276 @@
+{
+    "totalCount": 378,
+    "data": [
+        {
+            "collectionId": "26",
+            "collectionName": null,
+            "changesetId": null,
+            "topicId": "58871",
+            "topicName": "Adjustable Speed Drive Placement Restriction",
+            "metadata_storage_name": "58871.md",
+            "metadata_storage_path": "https://stspexprod.blob.core.windows.net/public-content/26/58871.md",
+            "ordinal_position": null,
+            "searchScore": 15.127773,
+            "sections": {
+                "h1": "",
+                "h2": "",
+                "h3": "Adjustable Speed Drive Fan Box Interference"
+            },
+            "highLights": {
+                "content": [
+                    "Adjustable Speed Drives in Enclosure Type 12 (Non-Arc Resistant) have restrictions to placement for Frame \\*Size 5 and Frame \\*\\*Size 7 devices located adjacent to each other (see examples)."
+                ],
+                "sections/h3": [
+                    "Adjustable Speed Drive Fan Box Interference"
+                ],
+                "topicName": [
+                    "Adjustable Speed Drive Placement Restriction"
+                ]
+            },
+            "isInternal": "false",
+            "isInternalBool": false
+        },
+        {
+            "collectionId": "17",
+            "collectionName": null,
+            "changesetId": null,
+            "topicId": "15650",
+            "topicName": "Speed Potentiometer",
+            "metadata_storage_name": "15650.md",
+            "metadata_storage_path": "https://stspexprod.blob.core.windows.net/public-content/17/15650.md",
+            "ordinal_position": null,
+            "searchScore": 14.114471,
+            "sections": {
+                "h1": "",
+                "h2": "",
+                "h3": ""
+            },
+            "highLights": {
+                "content": [
+                    "**ATS48/480 Soft Start Controller**\r\n\r\n* A06 - Start/Stop push buttons\r\n* B06 - Forward-Off-Reverse selector switch (future)\r\n* C06 - Hand-Off-Auto selector switch\r\n* D06 - Stop-Run selector switch\r\n* E06 - Hand-Auto selector switch and Start/Stop push buttons\r\n\r\n **ATS22 Soft Start Controller**\r\n\r\n* A06 - Start/Stop push buttons\r\n* B06 - Forward-Off-Reverse selector switch\r\n* C06 - Hand-Off-Auto selector switch\r\n* D06 - Stop-Run selector switch\r\n* E06 - Hand-Auto selector switch and Start/Stop push buttons\r\n\r\n **Altivar Process**\r\n\r\n* N11 - Prewired to terminal blocks for remote Hand-Off-Auto and speed control (no operators)\r\n* A11 - Hand-Off-Auto selector switch  **with manual speed potentiometer**\r\n* B11 - Hand-Off-Auto selector switch,  **manual speed potentiometer**  and Stop/Start push buttons"
+                ],
+                "topicName": [
+                    "Speed Potentiometer"
+                ]
+            },
+            "isInternal": "false",
+            "isInternalBool": false
+        },
+        {
+            "collectionId": "26",
+            "collectionName": null,
+            "changesetId": null,
+            "topicId": "8824",
+            "topicName": "Manual Speed Potentiometer",
+            "metadata_storage_name": "8824.md",
+            "metadata_storage_path": "https://stspexprod.blob.core.windows.net/public-content/26/8824.md",
+            "ordinal_position": null,
+            "searchScore": 13.822902,
+            "sections": {
+                "h1": "",
+                "h2": "",
+                "h3": ""
+            },
+            "highLights": {
+                "content": [
+                    "Motor speed can be changed by adjusting the door mounted speed potentiometer supplied on the drive station plate."
+                ],
+                "topicName": [
+                    "Manual Speed Potentiometer"
+                ]
+            },
+            "isInternal": "false",
+            "isInternalBool": false
+        },
+        {
+            "collectionId": "26",
+            "collectionName": null,
+            "changesetId": null,
+            "topicId": "7976",
+            "topicName": "Motor Speed",
+            "metadata_storage_name": "7976.md",
+            "metadata_storage_path": "https://stspexprod.blob.core.windows.net/public-content/26/7976.md",
+            "ordinal_position": null,
+            "searchScore": 13.806935,
+            "sections": {
+                "h1": "",
+                "h2": "",
+                "h3": ""
+            },
+            "highLights": {
+                "content": [
+                    "Allows selector user to choose either a single speed or two speed motor.\r\n\r\n!"
+                ],
+                "topicName": [
+                    "Motor Speed"
+                ]
+            },
+            "isInternal": "false",
+            "isInternalBool": false
+        },
+        {
+            "collectionId": "26",
+            "collectionName": null,
+            "changesetId": null,
+            "topicId": "9159",
+            "topicName": "Device 75: Adjustable Speed Drives",
+            "metadata_storage_name": "9159.md",
+            "metadata_storage_path": "https://stspexprod.blob.core.windows.net/public-content/26/9159.md",
+            "ordinal_position": null,
+            "searchScore": 13.511664,
+            "sections": {
+                "h1": "",
+                "h2": "",
+                "h3": ""
+            },
+            "highLights": {
+                "content": [
+                    "| FSID | FEATURE SET | FEAT ID | FEATURE NAME | DATA TYPE |\r\n| --- | --- | --- | --- | --- |\r\n| 75 | Adjustable Speed Drives | C30 | Controller Type | Choice List |\r\n| 75 | Adjustable Speed Drives | C31 | Contactor Type | Choice List |\r\n| 75 | Adjustable Speed Drives | C6F | Alarm Switch | Boolean |\r\n| 75 | Adjustable Speed Drives | CDX | Elapsed Time Meter | Boolean |\r\n| 75 | Adjustable Speed Drives | CN1 | Power Circuit Type | Choice List |\r\n| 75 | Adjustable Speed Drives | F14 | Interwiring | Choice List |\r\n| 75 | Adjustable Speed Drives | FR1 | Auxilliary Relay/Timer #1 | Choice List |\r\n| 75 | Adjustable Speed Drives | FR2 | Auxilliary Relay/Timer #2 | Choice List |"
+                ],
+                "topicName": [
+                    "Device 75: Adjustable Speed Drives"
+                ]
+            },
+            "isInternal": "false",
+            "isInternalBool": false
+        },
+        {
+            "collectionId": "26",
+            "collectionName": null,
+            "changesetId": null,
+            "topicId": "9144",
+            "topicName": "Device 75: Adjustable Speed Drives",
+            "metadata_storage_name": "9144.md",
+            "metadata_storage_path": "https://stspexprod.blob.core.windows.net/public-content/26/9144.md",
+            "ordinal_position": null,
+            "searchScore": 13.163641,
+            "sections": {
+                "h1": "",
+                "h2": "",
+                "h3": ""
+            },
+            "highLights": {
+                "content": [
+                    "collectionId=26&topicId=47234) = 0 check the following for consolidation criteria:\r\n\r\n| FSID | FEATURE SET | FEAT ID | FEATURE NAME | DATA TYPE |\r\n| --- | --- | --- | --- | --- |\r\n| 75 | Adjustable Speed Drives | C08 | Control Power Xfmr Rating | Choice List |\r\n| 75 | Adjustable Speed Drives | C0C | Transformer Capacity | Choice List |\r\n| 75 | Adjustable Speed Drives | C30 | Controller Type | Choice List |\r\n| 75 | Adjustable Speed Drives | C31 | Contactor Type | Choice List |\r\n| 75 | Adjustable Speed Drives | C33 | Contactor Size | Choice List |\r\n| 75 | Adjustable Speed Drives | C36 | Duty Application | Choice List |\r\n| 75 | Adjustable Speed Drives | C6E | Contact Options | Choice List |\r\n| 75 | Adjustable Speed Drives | C6F | Alarm Switch | Boolean |\r\n| 75 | Adjustable Speed Drives | CC8 | Overload Designator | Choice List |\r\n| 75 | Adjustable Speed Drives | CDX | Elapsed Time Meter | Boolean |\r\n| 75 | Adjustable Speed Drives | CE8 | Communication Type | Choice List |\r\n| 75 | Adjustable",
+                    "Speed Drives | CIO | Disconnect Type | Choice List |\r\n| 75 | Adjustable Speed Drives | CN1 | Power Circuit Type | Choice List |\r\n| 75 | Adjustable Speed Drives | CPN | Torque Type | Choice List |\r\n| 75 | Adjustable Speed Drives | CPP | Dynamic Braking Required | Boolean |\r\n| 75 | Adjustable Speed Drives | CU0 | Control Source | Choice List |\r\n| 75 | Adjustable Speed Drives | CU1 | Control Circuit Fusing | Choice List |\r\n| 75 | Adjustable Speed Drives | CU6 | Motor On Pilot Light | Choice List |\r\n| 75 | Adjustable Speed Drives | CU7 | Motor Off Pilot Light | Choice List |\r\n| 75 | Adjustable Speed Drives | CU8 | Power On Pilot Light | Choice List |\r\n| 75 | Adjustable Speed Drives | CU9 | Fault Pilot Light | Choice List |\r\n| 75 | Adjustable Speed Drives | CUA | Stop/Start Function | Choice List |\r\n| 75 | Adjustable Speed Drives | CUB | Hand Auto Function | Choice List |\r\n| 75 | Adjustable Speed Drives | CUC | Forward/Reverse Function | Choice List |\r\n| 75 | Adjustable Speed Drives | E06 |",
+                    "Associated Unit Section 1 | User Input |\r\n| 75 | Adjustable Speed Drives | E07 | Associated Unit Position 1 | User Input |\r\n| 75 | Adjustable Speed Drives | E08 | Associated Unit Section 2 | User Input |\r\n| 75 | Adjustable Speed Drives | E09 | Associated Unit Position 2 | User Input |\r\n| 75 | Adjustable Speed Drives | E10 | Associated Unit Section 3 | User Input |\r\n| 75 | Adjustable Speed Drives | E11 | Associated Unit Position 3 | User Input |\r\n| 75 | Adjustable Speed Drives | E12 | Associated Unit Section 4 | User Input |\r\n| 75 | Adjustable Speed Drives | E13 | Associated Unit Position 4 | User Input |\r\n| 75 | Adjustable Speed Drives | F02 | Hand ~ Auto Lights (Yellow) | Boolean |\r\n| 75 | Adjustable Speed Drives | F14 | Interwiring | Choice List |\r\n| 75 | Adjustable Speed Drives | FR1 | Auxilliary Relay/Timer #1 | Choice List |\r\n| 75 | Adjustable Speed Drives | FR2 | Auxilliary Relay/Timer #2 | Choice List |\r\n| 75 | Adjustable Speed Drives | M02 | External Contact Options | Choice List",
+                    "|\r\n| 75 | Adjustable Speed Drives | V01 | ASD Model | Choice List |\r\n| 75 | Adjustable Speed Drives | V02 | Manual Speed Potentiometer | Boolean |\r\n| 75 | Adjustable Speed Drives | V03 | ASD On Pilot Light | Choice List |\r\n| 75 | Adjustable Speed Drives | V04 | BYPASS On Pilot Light | Choice List |\r\n| 75 | Adjustable Speed Drives | V05 | Auto Start Relay | Choice List |\r\n| 75 | Adjustable Speed Drives | V06 | Power Isolator Control | Boolean |\r\n| 75 | Adjustable Speed Drives | V07 | Line Reactor | Boolean |\r\n| 75 | Adjustable Speed Drives | V08 | Option Card | Choice List |\r\n| 75 | Adjustable Speed Drives | V09 | ASD/OFF/BYP Selector Switch | Boolean |\r\n| 75 | Adjustable Speed Drives | V14 | Impedance Level | Choice List |\r\n| 75 | Adjustable Speed Drives | CFQ | Motor Horsepower | Choice List |\r\n| 75 | Adjustable Speed Drives | V17 | Card Placement Slot A | Choice List |\r\n| 75 | Adjustable Speed Drives | V18 | Card Placement Slot B | Choice List |"
+                ],
+                "topicName": [
+                    "Device 75: Adjustable Speed Drives"
+                ]
+            },
+            "isInternal": "false",
+            "isInternalBool": false
+        },
+        {
+            "collectionId": "26",
+            "collectionName": null,
+            "changesetId": null,
+            "topicId": "6976",
+            "topicName": "Adjustable Speed Drives [75]",
+            "metadata_storage_name": "6976.md",
+            "metadata_storage_path": "https://stspexprod.blob.core.windows.net/public-content/26/6976.md",
+            "ordinal_position": null,
+            "searchScore": 13.111654,
+            "sections": {
+                "h1": "",
+                "h2": "",
+                "h3": ""
+            },
+            "highLights": {
+                "content": [
+                    "See [Adjustable Speed Drives \\[75\\]](docs?",
+                    "* [Adjustable Speed Drives \\[75\\]](docs?"
+                ],
+                "topicName": [
+                    "Adjustable Speed Drives [75]"
+                ]
+            },
+            "isInternal": "false",
+            "isInternalBool": false
+        },
+        {
+            "collectionId": "30",
+            "collectionName": null,
+            "changesetId": null,
+            "topicId": "22799",
+            "topicName": "Arc Resistant",
+            "metadata_storage_name": "22799.md",
+            "metadata_storage_path": "https://stspexprod.blob.core.windows.net/public-content/30/22799.md",
+            "ordinal_position": null,
+            "searchScore": 12.202083,
+            "sections": {
+                "h1": "",
+                "h2": "",
+                "h3": "Active High Speed Protection - Product Obsolescence"
+            },
+            "highLights": {
+                "content": [
+                    "The line side High Speed Switch(es) will operate only for line side internal arcing faults.",
+                    "The load side High Speed Switch(es) will operate only for load side, of main breakers, internal arcing faults.",
+                    "In the event that the line side High Speed Switch(es) have operated, the remote upstream over-current protective device must clear the fault within 1 second (the short time rating of the High Speed Switch).",
+                    "High Speed Switch(es), light detectors, and current transformers are to be configured for full switchgear protection",
+                    "High Speed Switch(es), light detectors, and current transformers are to be configured for full switchgear protection"
+                ],
+                "sections/h3": [
+                    "Active High Speed Protection - Product Obsolescence"
+                ]
+            },
+            "isInternal": "false",
+            "isInternalBool": false
+        },
+        {
+            "collectionId": "26",
+            "collectionName": null,
+            "changesetId": null,
+            "topicId": "8057",
+            "topicName": "Two-Speed Function",
+            "metadata_storage_name": "8057.md",
+            "metadata_storage_path": "https://stspexprod.blob.core.windows.net/public-content/26/8057.md",
+            "ordinal_position": null,
+            "searchScore": 12.149143,
+            "sections": {
+                "h1": "",
+                "h2": "",
+                "h3": ""
+            },
+            "highLights": {
+                "content": [
+                    "Provides a method of controlling two speed motors."
+                ],
+                "topicName": [
+                    "Two-Speed Function"
+                ]
+            },
+            "isInternal": "false",
+            "isInternalBool": false
+        },
+        {
+            "collectionId": "26",
+            "collectionName": null,
+            "changesetId": null,
+            "topicId": "8883",
+            "topicName": "Adjustable Speed Drive Configuration Procedure",
+            "metadata_storage_name": "8883.md",
+            "metadata_storage_path": "https://stspexprod.blob.core.windows.net/public-content/26/8883.md",
+            "ordinal_position": null,
+            "searchScore": 12.027706,
+            "sections": {
+                "h1": "",
+                "h2": "Determine Config Table",
+                "h3": "Naming Convention: for PCD use only (reference only)"
+            },
+            "highLights": {
+                "content": [
+                    "Simply specififes how the above configuration table names related to Adjustable Speed Drives are derived"
+                ],
+                "topicName": [
+                    "Adjustable Speed Drive Configuration Procedure"
+                ]
+            },
+            "isInternal": "false",
+            "isInternalBool": false
+        }
+    ]
+}
