@@ -3,13 +3,14 @@ import { loadBasePrompt, fetchCollections, fetchTopics, fetchTopicContent } from
 
 let productCollection: { id: number; name: string; tag: string }[] = [];
 const debugMode = false; // Set to true to enable debug output
+const confidenceThreshold = 0.1;
 
 export async function activate(context: vscode.ExtensionContext) {
-    productCollection = await fetchCollections(); // Fetch once and store globally
-    const BASE_PROMPT = getBasePrompt(context);
-    const handler: vscode.ChatRequestHandler = createChatHandler(BASE_PROMPT);
-    const tutor = vscode.chat.createChatParticipant("ace-chat.spex-helper", handler);
-    tutor.iconPath = vscode.Uri.joinPath(context.extensionUri, 'schneider.jpg');
+	productCollection = await fetchCollections(); // Fetch once and store globally
+	const BASE_PROMPT = getBasePrompt(context);
+	const handler: vscode.ChatRequestHandler = createChatHandler(BASE_PROMPT);
+	const tutor = vscode.chat.createChatParticipant("ace-chat.spex-helper", handler);
+	tutor.iconPath = vscode.Uri.joinPath(context.extensionUri, 'schneider.jpg');
 }
 
 function getBasePrompt(context: vscode.ExtensionContext): string {
@@ -30,20 +31,19 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 			stream.markdown('```text\n' + identifyPrompt + '\n```');
 		}
 
-			const messages = [
-				vscode.LanguageModelChatMessage.User(identifyPrompt)
-			];
+		const messages = [
+			vscode.LanguageModelChatMessage.User(identifyPrompt)
+		];
 
 		const chatResponse = await request.model.sendRequest(messages, {}, token);
-
 		let responseText = '';
 		if (debugMode) {
 			stream.markdown('**LLM Raw Response:**');
 		}
-			for await (const fragment of chatResponse.text) {
-				responseText += fragment;
-				if (debugMode) { stream.markdown(fragment); } // Stream fragments as they arrive
-			}
+		for await (const fragment of chatResponse.text) {
+			responseText += fragment;
+			if (debugMode) { stream.markdown(fragment); } // Stream fragments as they arrive
+		}
 
 		let products: { id: number; name: string; tag: string; confidence: number }[] = [];
 		try {
@@ -55,9 +55,19 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 				}
 			}
 		} catch {
-				stream.markdown('Could not parse product identification.');
-				return;
-			}
+			stream.markdown('Could not parse product identification.');
+			return;
+		}
+
+		// Prevent proceeding if all products have low or near-zero confidence
+		const highestConfidence = products.reduce((max, p) => Math.max(max, p.confidence), 0);
+		if (highestConfidence < confidenceThreshold) {
+			stream.markdown('I am not confident about which product you are referring to. Please clarify your request or choose from the following products:\n');
+			productCollection.forEach((product, idx) => {
+				stream.markdown(`${idx + 1}. ${product.name} (id: ${product.id})\n`);
+			});
+			return;
+		}
 
 		if (!products || products.length === 0) {
 			stream.markdown('You did not provide a topic I can help with. Here are the products I can help with:\n');
@@ -81,12 +91,12 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 		try {
 			topics = await fetchTopics(collectionId);
 		} catch {
-				stream.markdown(`Failed to fetch topics for ${topProduct.name}.`);
-				return;
-			}
+			stream.markdown(`Failed to fetch topics for ${topProduct.name}.`);
+			return;
+		}
 
 		// New: Ask LLM to pick top 3 topics relevant to the user prompt
-		const topicPrompt = `Product: ${topProduct.name}\nTopics: ${JSON.stringify(topics, null, 2)}\nUser Prompt: ${request.prompt}\n\nTask: From the topics above, identify the top 3 most relevant topics to the user's prompt. Return your answer as a JSON array of objects with "id", "name", and "confidence".`;
+		const topicPrompt = `Product: ${topProduct.name}\nTopics: ${JSON.stringify(topics, null, 2)}\nUser Prompt: ${request.prompt}\n\nTask: From the topics above, identify the top 3 most relevant topics to the user's prompt. Return your answer as a JSON array of objects with "id", "name", and "confidence" as a number between 0 and 1.`;
 
 		// Uncomment these lines if you want to debug topic selection
 		// if (debugMode) {
@@ -94,9 +104,9 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 		//     stream.markdown('```text\n' + topicPrompt + '\n```');
 		// }
 
-			const topicMessages = [
-				vscode.LanguageModelChatMessage.User(topicPrompt)
-			];
+		const topicMessages = [
+			vscode.LanguageModelChatMessage.User(topicPrompt)
+		];
 
 		const topicResponse = await request.model.sendRequest(topicMessages, {}, token);
 
@@ -104,10 +114,10 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 		if (debugMode) {
 			stream.markdown('**LLM Topic Raw Response:**');
 		}
-			for await (const fragment of topicResponse.text) {
-				topicResponseText += fragment;
-				if (debugMode) { stream.markdown(fragment); }
-			}
+		for await (const fragment of topicResponse.text) {
+			topicResponseText += fragment;
+			if (debugMode) { stream.markdown(fragment); }
+		}
 
 		let bestTopics: { id: number; name: string; confidence: number }[] = [];
 		try {
@@ -119,9 +129,9 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 				}
 			}
 		} catch {
-				stream.markdown('Could not parse topic identification.');
-				return;
-			}
+			stream.markdown('Could not parse topic identification.');
+			return;
+		}
 
 		stream.markdown(`**Top Product:** ${topProduct.name}\n\n**Best Topics:**\n\n`);
 		bestTopics.forEach((topic, idx) => {
@@ -131,17 +141,17 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 
 		// Fetch content for each topic and print as raw Markdown, removing images
 		stream.markdown('**Topic Contents:**\n\n');
-			for (const topic of bestTopics) {
-				const topicUrl = `https://spex.se.com/ui/docs?collectionId=${collectionId}&topicId=${topic.id}`;
-				try {
-					let content = await fetchTopicContent(collectionId, topic.id);
-					// Remove Markdown image tags
-					content = content.replace(/!\[.*?\]\(.*?\)/g, '');
-					stream.markdown(`## [${topic.name}](${topicUrl})\n\n${content}\n`);
-				} catch {
-					stream.markdown(`## [${topic.name}](${topicUrl})\n\n[Failed to fetch content]\n`);
-				}
+		for (const topic of bestTopics) {
+			const topicUrl = `https://spex.se.com/ui/docs?collectionId=${collectionId}&topicId=${topic.id}`;
+			try {
+				let content = await fetchTopicContent(collectionId, topic.id);
+				// Remove Markdown image tags
+				content = content.replace(/!\[.*?\]\(.*?\)/g, '');
+				stream.markdown(`## [${topic.name}](${topicUrl})\n\n${content}\n`);
+			} catch {
+				stream.markdown(`## [${topic.name}](${topicUrl})\n\n[Failed to fetch content]\n`);
 			}
+		}
 		return;
 	};
 }
