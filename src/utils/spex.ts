@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { SpexSearchResponse } from '../src/types/searchResult';
+import { SpexSearchResponse } from '../types/searchResult';
 
 // Utility to load the base prompt from markdown file
 export function loadBasePrompt(extensionPath: string): string {
