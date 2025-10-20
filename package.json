@@ -15,14 +15,14 @@
 	"contributes": {
 		"chatParticipants": [
 			{
-				"id": "ace-chat.spex-helper",
-				"fullName": "SPEX Helper",
-				"name": "spex",
-				"description": "Ask me something about product info found in SPEX",
+				"id": "ace-chat.helper",
+				"fullName": "ACE Ecosystem Helper",
+				"name": "ace",
+				"description": "Ask me something about ACE. For now I only understand the /spex command.",
 				"isSticky": true,
 				"commands": [
 					{
-						"name": "help",
+						"name": "spex",
 						"description": "Provide SPEX information about a product."
 					}
 				]

@@ -9,7 +9,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	productCollection = await fetchCollections(); // Fetch once and store globally
 	const BASE_PROMPT = getBasePrompt(context);
 	const handler: vscode.ChatRequestHandler = createChatHandler(BASE_PROMPT);
-	const tutor = vscode.chat.createChatParticipant("ace-chat.spex-helper", handler);
+	const tutor = vscode.chat.createChatParticipant("ace-chat.helper", handler);
 	tutor.iconPath = vscode.Uri.joinPath(context.extensionUri, 'schneider.jpg');
 }
 
@@ -18,13 +18,50 @@ function getBasePrompt(context: vscode.ExtensionContext): string {
 }
 
 function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
-	return async (request: vscode.ChatRequest, chatContext: vscode.ChatContext, stream: vscode.ChatResponseStream, token: vscode.CancellationToken) => {
+	// Map of command name to handler function
+	const commandHandlers: Record<string, (
+		request: vscode.ChatRequest,
+		chatContext: vscode.ChatContext,
+		stream: vscode.ChatResponseStream,
+		token: vscode.CancellationToken,
+		userPrompt: string
+	) => Promise<void>> = {
+		spex: handleSpexCommand
+		// Add more commands here, e.g. 'other': handleOtherCommand
+	};
+
+	return async (request, chatContext, stream, token) => {
+		// Use request.command if available, otherwise fallback to old parsing for backward compatibility
+		let command: string | undefined;
+		let userPrompt = '';
+		if (request.command) {
+			command = request.command.toLowerCase();
+			userPrompt = request.prompt;
+		} 
+
+		if (!command) {
+			stream.markdown('Please use a supported command (e.g., `/spex`).');
+			return;
+		}
+		const handler = commandHandlers[command];
+
+		await handler(request, chatContext, stream, token, userPrompt);
+	};
+
+	// Handler for /spex command
+	async function handleSpexCommand(
+		request: vscode.ChatRequest,
+		chatContext: vscode.ChatContext,
+		stream: vscode.ChatResponseStream,
+		token: vscode.CancellationToken,
+		userPrompt: string
+	) {
 		if (!productCollection || productCollection.length === 0) {
 			stream.markdown('Product collections not loaded.');
 			return;
 		}
 
-		const identifyPrompt = `${BASE_PROMPT}\n\nProduct Collection:\n${JSON.stringify(productCollection, null, 2)}\n\nUser Prompt: ${request.prompt}\n\nTask: Only identify the product(s) from the collection that the user is referring to. Do not provide any other information. Return your answer as a JSON array of objects with "id", "name", "tag", and "confidence" fields.`;
+		const identifyPrompt = `${BASE_PROMPT}\n\nProduct Collection:\n${JSON.stringify(productCollection, null, 2)}\n\nUser Prompt: ${userPrompt}\n\nTask: Only identify the product(s) from the collection that the user is referring to. Do not provide any other information. Return your answer as a JSON array of objects with "id", "name", "tag", and "confidence" fields.`;
 
 		if (debugMode) {
 			stream.markdown('**LLM Prompt:**');
@@ -96,7 +133,7 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 		}
 
 		// New: Ask LLM to pick top 3 topics relevant to the user prompt
-		const topicPrompt = `Product: ${topProduct.name}\nTopics: ${JSON.stringify(topics, null, 2)}\nUser Prompt: ${request.prompt}\n\nTask: From the topics above, identify the top 3 most relevant topics to the user's prompt. Return your answer as a JSON array of objects with "id", "name", and "confidence" as a number between 0 and 1.`;
+		const topicPrompt = `Product: ${topProduct.name}\nTopics: ${JSON.stringify(topics, null, 2)}\nUser Prompt: ${userPrompt}\n\nTask: From the topics above, identify the top 3 most relevant topics to the user's prompt. Return your answer as a JSON array of objects with "id", "name", and "confidence" as a number between 0 and 1.`;
 
 		// Uncomment these lines if you want to debug topic selection
 		// if (debugMode) {
@@ -140,7 +177,7 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 		});
 
 		// Ask AI for a summary based on best topics and user prompt
-		const summaryPrompt = `\nYou are an expert assistant. Based on the following topics and the user's prompt, provide a concise summary or answer for the user. Reference the topics as needed, but do not include their full content.\n\nUser Prompt: ${request.prompt}\nBest Topics: ${JSON.stringify(bestTopics, null, 2)}\n\nTask: Write a summary or answer for the user, referencing the topics above as supporting links.`;
+		const summaryPrompt = `\nYou are an expert assistant. Based on the following topics and the user's prompt, provide a concise summary or answer for the user. Reference the topics as needed, but do not include their full content.\n\nUser Prompt: ${userPrompt}\nBest Topics: ${JSON.stringify(bestTopics, null, 2)}\n\nTask: Write a summary or answer for the user, referencing the topics above as supporting links.`;
 
 		const summaryMessages = [
 			vscode.LanguageModelChatMessage.User(summaryPrompt)
@@ -170,8 +207,7 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 				stream.markdown(`Failed to fetch child topics for ${topic.name}.`);
 			}
 		}
-		return;
-	};
+	}
 }
 
 export function deactivate() { }
