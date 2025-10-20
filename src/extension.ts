@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { loadBasePrompt, fetchCollections, fetchTopics, fetchTopicContent } from './utils';
+import { loadBasePrompt, fetchCollections, fetchTopics, fetchChildTopics } from './utils';
 
 let productCollection: { id: number; name: string; tag: string }[] = [];
 const debugMode = false; // Set to true to enable debug output
@@ -139,17 +139,35 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 			stream.markdown(`${idx + 1}. [${topic.name}](${topicUrl}) (confidence: ${topic.confidence})\n`);
 		});
 
-		// Fetch content for each topic and print as raw Markdown, removing images
-		stream.markdown('**Topic Contents:**\n\n');
+		// Ask AI for a summary based on best topics and user prompt
+		const summaryPrompt = `\nYou are an expert assistant. Based on the following topics and the user's prompt, provide a concise summary or answer for the user. Reference the topics as needed, but do not include their full content.\n\nUser Prompt: ${request.prompt}\nBest Topics: ${JSON.stringify(bestTopics, null, 2)}\n\nTask: Write a summary or answer for the user, referencing the topics above as supporting links.`;
+
+		const summaryMessages = [
+			vscode.LanguageModelChatMessage.User(summaryPrompt)
+		];
+
+		const summaryResponse = await request.model.sendRequest(summaryMessages, {}, token);
+
+		let summaryText = '';
+		for await (const fragment of summaryResponse.text) {
+			summaryText += fragment;
+		}
+		stream.markdown(`**Summary:**\n\n${summaryText}\n`);
+
+		// Optionally, display child topics as links (no content)
 		for (const topic of bestTopics) {
 			const topicUrl = `https://spex.se.com/ui/docs?collectionId=${collectionId}&topicId=${topic.id}`;
 			try {
-				let content = await fetchTopicContent(collectionId, topic.id);
-				// Remove Markdown image tags
-				content = content.replace(/!\[.*?\]\(.*?\)/g, '');
-				stream.markdown(`## [${topic.name}](${topicUrl})\n\n${content}\n`);
+				const childTopics = await fetchChildTopics(collectionId, topic.id);
+				if (childTopics.length > 0) {
+					stream.markdown(`### Child Topics for [${topic.name}](${topicUrl}):`);
+					childTopics.forEach((child, idx) => {
+						const childUrl = `https://spex.se.com/ui/docs?collectionId=${collectionId}&topicId=${child.id}`;
+						stream.markdown(`${idx + 1}. [${child.name}](${childUrl})`);
+					});
+				}
 			} catch {
-				stream.markdown(`## [${topic.name}](${topicUrl})\n\n[Failed to fetch content]\n`);
+				stream.markdown(`Failed to fetch child topics for ${topic.name}.`);
 			}
 		}
 		return;
