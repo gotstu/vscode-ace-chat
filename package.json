@@ -18,12 +18,16 @@
 				"id": "ace-chat.helper",
 				"fullName": "ACE Ecosystem Helper",
 				"name": "ace",
-				"description": "Ask me something about ACE. For now I only understand the /spex command.",
+				"description": "Ask me something about ACE. I understand the /spex and /spexsearch commands.",
 				"isSticky": true,
 				"commands": [
 					{
 						"name": "spex",
 						"description": "Provide SPEX information about a product."
+					},
+					{
+						"name": "spexsearch",
+						"description": "Quickly search SPEX highlights for your query."
 					}
 				]
 			}

@@ -1,9 +1,19 @@
 import * as vscode from 'vscode';
-import { loadBasePrompt, fetchCollections, fetchTopics, fetchTopicContent } from './utils/spex';
+import { loadBasePrompt, fetchCollections, fetchTopics, fetchTopicContent, fetchSpexSearchResults } from './utils/spex';
 
 let productCollection: { id: number; name: string; tag: string }[] = [];
 const debugMode = false; // Set to true to enable debug output
 const confidenceThreshold = 0.1;
+// Simple in-memory cache for search responses
+const searchCache = new Map<string, { ts: number; data: import('./types/searchResult').SpexSearchResponse }>();
+
+function sanitizeSnippet(text: string): string {
+	return text
+		.replace(/<\/?[^>]+>/g, '') // strip HTML tags
+		.replace(/\s+/g, ' ') // collapse whitespace
+		.trim()
+		.slice(0, 1200); // cap length sent to model
+}
 
 export async function activate(context: vscode.ExtensionContext) {
 	productCollection = await fetchCollections(); // Fetch once and store globally
@@ -26,7 +36,8 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 		token: vscode.CancellationToken,
 		userPrompt: string
 	) => Promise<void>> = {
-		spex: handleSpexCommand
+		spex: handleSpexCommand,
+		spexsearch: handleSpexSearchCommand
 		// Add more commands here, e.g. 'other': handleOtherCommand
 	};
 
@@ -48,7 +59,67 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 		await handler(request, chatContext, stream, token, userPrompt);
 	};
 
-	// Handler for /spex command
+	// Handler for /spexsearch command (lightweight: uses search highlight snippets only)
+	async function handleSpexSearchCommand(
+		request: vscode.ChatRequest,
+		_chatContext: vscode.ChatContext,
+		stream: vscode.ChatResponseStream,
+		token: vscode.CancellationToken,
+		userPrompt: string
+	) {
+		const query = userPrompt.trim();
+		if (!query) {
+			stream.markdown('Provide a search query after `/spexsearch`.');
+			return;
+		}
+		const cacheKey = query.toLowerCase();
+		let cached = searchCache.get(cacheKey);
+		if (!cached || (Date.now() - cached.ts) > 5 * 60_000) { // 5 min cache
+			try {
+				const data = await fetchSpexSearchResults(query, 1, 12);
+				cached = { ts: Date.now(), data };
+				searchCache.set(cacheKey, cached);
+			} catch (err) {
+				stream.markdown('Search failed.');
+				if (debugMode) { stream.markdown(String(err)); }
+				return;
+			}
+		}
+		const resp = cached.data;
+		if (!resp || resp.totalCount === 0) {
+			stream.markdown('No results found.');
+			return;
+		}
+		const topItems = resp.data.slice(0, 5);
+		stream.markdown(`Found ${resp.totalCount} results. Showing top ${topItems.length}:`);
+		topItems.forEach((r, i) => {
+			const url = `https://spex.se.com/ui/docs?collectionId=${r.collectionId}&topicId=${r.topicId}`;
+			stream.markdown(`${i + 1}. [${r.topicName}](${url}) (score: ${r.searchScore.toFixed(2)})`);
+		});
+		// Build highlight-only prompt
+		const snippetBlocks = topItems.map(r => {
+			const highlightArrays = Object.values(r.highLights || {}).flat();
+			const highlights = sanitizeSnippet(highlightArrays.slice(0, 3).join('\n'));
+			return `Topic: ${r.topicName}\nHighlights:\n${highlights}`;
+		}).join('\n---\n');
+		const answerPrompt = `Use ONLY the provided SPEX search highlight snippets to answer the user.\nUser Query: ${query}\nSnippets:\n${snippetBlocks}\nReturn a concise answer. If insufficient, say you need a more specific query.`;
+		if (debugMode) {
+			stream.markdown('**Search Answer Prompt:**');
+			stream.markdown('```text\n' + answerPrompt + '\n```');
+		}
+		try {
+			const messages = [vscode.LanguageModelChatMessage.User(answerPrompt)];
+			const answerResp = await request.model.sendRequest(messages, {}, token);
+			let answer = '';
+			for await (const frag of answerResp.text) { answer += frag; }
+			stream.markdown('\n**Answer:**\n' + answer);
+		} catch (err) {
+			stream.markdown('LLM generation failed for search answer.');
+			if (debugMode) { stream.markdown(String(err)); }
+		}
+	}
+
+	// Handler for /spex command (full product/topic workflow)
 	async function handleSpexCommand(
 		request: vscode.ChatRequest,
 		chatContext: vscode.ChatContext,
@@ -124,6 +195,7 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 		// Show confidence message before fetching topics
 		stream.markdown(`I am confident you are asking about '${topProduct.name}' (confidence: ${topProduct.confidence}). I will fetch the topics now.\n\n`);
 
+		// Search-assisted narrowing of topics
 		let topics: { id: number; name: string }[] = [];
 		try {
 			topics = await fetchTopics(collectionId);
@@ -131,10 +203,27 @@ function createChatHandler(BASE_PROMPT: string): vscode.ChatRequestHandler {
 			stream.markdown(`Failed to fetch topics for ${topProduct.name}.`);
 			return;
 		}
-
-
+		const searchTopicIds = new Set<number>();
+		try {
+			const searchData = await fetchSpexSearchResults(userPrompt, 1, 25);
+			searchData.data.forEach(item => {
+				if (item.collectionId === String(collectionId)) {
+					const tid = Number(item.topicId);
+					if (!Number.isNaN(tid)) { searchTopicIds.add(tid); }
+				}
+			});
+			if (debugMode) {
+				stream.markdown(`Search-derived topic IDs: ${Array.from(searchTopicIds).join(', ')}`);
+			}
+		} catch (err) {
+			if (debugMode) { stream.markdown('Search narrowing failed: ' + String(err)); }
+		}
+		const narrowedTopics = searchTopicIds.size > 0 ? topics.filter(t => searchTopicIds.has(t.id)) : topics;
+		if (narrowedTopics.length === 0) {
+			stream.markdown('Search did not narrow any topics; using full topic list.');
+		}
 		// Ask LLM to pick top 3 topics relevant to the user prompt
-		const topicPrompt = `Product: ${topProduct.name}\nTopics: ${JSON.stringify(topics, null, 2)}\nUser Prompt: ${userPrompt}\n\nTask: From the topics above, identify the top 3 most relevant topics to the user's prompt. Return your answer as a JSON array of objects with "id", "name", and "confidence" as a number between 0 and 1.`;
+		const topicPrompt = `Product: ${topProduct.name}\nTopics: ${JSON.stringify(narrowedTopics, null, 2)}\nUser Prompt: ${userPrompt}\n\nTask: From the topics above, identify the top 3 most relevant topics to the user's prompt. Return your answer as a JSON array of objects with "id", "name", and "confidence" as a number between 0 and 1.`;
 
 		const topicMessages = [
 			vscode.LanguageModelChatMessage.User(topicPrompt)
